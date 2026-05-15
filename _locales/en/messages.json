@@ -1,0 +1,9 @@
+{
+  "appName": { "message": "SpellCheck Open" },
+  "appDesc": { "message": "Open-source multilingual spell checker. Download and load your own dictionaries." },
+  "ctxMenuTitle": { "message": "SpellCheck Open" },
+  "ctxAddWord": { "message": "Add to personal dictionary" },
+  "ctxToggle": { "message": "Toggle spell check" },
+  "noSuggestions": { "message": "No suggestions" },
+  "addToDictionary": { "message": "✚ Add to dictionary" }
+}

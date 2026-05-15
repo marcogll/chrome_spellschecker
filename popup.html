@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SpellCheck Open</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --bg2: #f7f7f7;
+      --bg3: #efefef;
+      --text: #1a1a1a;
+      --text2: #666;
+      --accent: #1976d2;
+      --accent-bg: #e3f2fd;
+      --danger: #e53935;
+      --danger-bg: #ffebee;
+      --success: #2e7d32;
+      --success-bg: #e8f5e9;
+      --border: #e0e0e0;
+      --radius: 8px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1e1e1e;
+        --bg2: #2a2a2a;
+        --bg3: #333;
+        --text: #e8e8e8;
+        --text2: #999;
+        --accent: #64b5f6;
+        --accent-bg: rgba(100,181,246,0.12);
+        --danger: #ef5350;
+        --danger-bg: rgba(239,83,80,0.12);
+        --success: #66bb6a;
+        --success-bg: rgba(102,187,106,0.12);
+        --border: #3a3a3a;
+      }
+    }
+
+    body {
+      width: 340px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-logo {
+      width: 28px;
+      height: 28px;
+      background: var(--accent);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .header-logo svg { width: 16px; height: 16px; }
+
+    .header-title {
+      flex: 1;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .header-subtitle {
+      font-size: 11px;
+      color: var(--text2);
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 36px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      left: 3px;
+      top: 3px;
+      width: 14px;
+      height: 14px;
+      background: white;
+      border-radius: 50%;
+      transition: transform .2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,.3);
+    }
+
+    .toggle-switch input:checked + .toggle-track { background: var(--accent); }
+    .toggle-switch input:checked + .toggle-track::after { transform: translateX(16px); }
+
+    /* ── Status bar ── */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text2);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      flex-shrink: 0;
+    }
+
+    .status-dot.empty { background: var(--text2); }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px 0;
+      font-size: 12px;
+      font-weight: 500;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      color: var(--text2);
+      transition: all .15s;
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── Diccionarios ── */
+    .section { padding: 12px 16px; }
+
+    .section-title {
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text2);
+      margin-bottom: 10px;
+    }
+
+    .dict-list { display: flex; flex-direction: column; gap: 6px; }
+
+    .dict-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: var(--bg2);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    .dict-flag { font-size: 18px; line-height: 1; }
+
+    .dict-info { flex: 1; min-width: 0; }
+
+    .dict-name {
+      font-weight: 500;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .dict-meta { font-size: 11px; color: var(--text2); }
+
+    .dict-remove {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text2);
+      padding: 2px 4px;
+      border-radius: 4px;
+      transition: all .15s;
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .dict-remove:hover { background: var(--danger-bg); color: var(--danger); }
+
+    .dict-empty {
+      text-align: center;
+      color: var(--text2);
+      font-size: 12px;
+      padding: 20px 0;
+    }
+
+    /* ── Botón agregar diccionario ── */
+    .add-dict-area {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .15s;
+      margin-top: 8px;
+    }
+
+    .add-dict-area:hover {
+      border-color: var(--accent);
+      background: var(--accent-bg);
+    }
+
+    .add-dict-area input { display: none; }
+
+    .add-dict-icon { font-size: 22px; margin-bottom: 4px; }
+
+    .add-dict-label {
+      font-size: 12px;
+      color: var(--text2);
+      line-height: 1.4;
+    }
+
+    .add-dict-label strong { color: var(--accent); }
+
+    /* ── Download links ── */
+    .download-section {
+      padding: 0 16px 12px;
+    }
+
+    .download-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text2);
+      margin-bottom: 8px;
+    }
+
+    .download-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+    }
+
+    .download-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 8px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 11px;
+      color: var(--text);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .15s;
+    }
+
+    .download-btn:hover { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+
+    /* ── Palabras personales ── */
+    .word-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .word-chip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 8px;
+      background: var(--bg2);
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    .word-chip button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text2);
+      font-size: 14px;
+      padding: 0 2px;
+    }
+
+    .word-chip button:hover { color: var(--danger); }
+
+    /* ── Progress / feedback ── */
+    .feedback {
+      padding: 8px 14px;
+      border-radius: var(--radius);
+      font-size: 12px;
+      margin: 10px 16px 0;
+      display: none;
+    }
+
+    .feedback.success { background: var(--success-bg); color: var(--success); display: block; }
+    .feedback.error   { background: var(--danger-bg);  color: var(--danger);  display: block; }
+    .feedback.loading { background: var(--accent-bg);  color: var(--accent);  display: block; }
+
+    /* ── Footer ── */
+    .footer {
+      padding: 10px 16px;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text2);
+      text-align: center;
+    }
+
+    .footer a { color: var(--accent); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+
+    /* ── Progress bar para carga ── */
+    .progress-bar {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      margin: 6px 0;
+      display: none;
+    }
+
+    .progress-bar.visible { display: block; }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+      width: 0%;
+      transition: width .3s;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+      <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+    </svg>
+  </div>
+  <div>
+    <div class="header-title">SpellCheck Open</div>
+    <div class="header-subtitle" id="status-text">Cargando...</div>
+  </div>
+  <label class="toggle-switch">
+    <input type="checkbox" id="toggle-enabled" checked>
+    <span class="toggle-track"></span>
+  </label>
+</div>
+
+<!-- Status bar -->
+<div class="status-bar">
+  <div class="status-dot" id="status-dot"></div>
+  <span id="status-langs">Sin diccionarios cargados</span>
+</div>
+
+<!-- Feedback -->
+<div class="feedback" id="feedback"></div>
+<div class="progress-bar" id="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab-btn active" data-tab="dicts">📚 Diccionarios</button>
+  <button class="tab-btn" data-tab="words">📝 Mis palabras</button>
+</div>
+
+<!-- TAB: Diccionarios -->
+<div class="tab-content active" id="tab-dicts">
+  <div class="section">
+    <div class="section-title">Diccionarios instalados</div>
+    <div class="dict-list" id="dict-list">
+      <div class="dict-empty">No hay diccionarios instalados</div>
+    </div>
+
+    <!-- Área de carga de archivos -->
+    <label class="add-dict-area" id="drop-zone">
+      <input type="file" id="file-input" accept=".zip,.dic,.aff" multiple>
+      <div class="add-dict-icon">📂</div>
+      <div class="add-dict-label">
+        <strong>Selecciona archivos .dic + .aff</strong><br>
+        o arrastra y suelta aquí
+      </div>
+    </label>
+  </div>
+
+  <!-- Descargar diccionarios -->
+  <div class="download-section">
+    <div class="download-title">Descargar diccionarios</div>
+    <div class="download-grid">
+      <a class="download-btn" href="https://github.com/wooorm/dictionaries/tree/main/dictionaries/es" target="_blank">🇪🇸 Español</a>
+      <a class="download-btn" href="https://github.com/wooorm/dictionaries/tree/main/dictionaries/en" target="_blank">🇺🇸 English</a>
+      <a class="download-btn" href="https://github.com/wooorm/dictionaries/tree/main/dictionaries/fr" target="_blank">🇫🇷 Français</a>
+      <a class="download-btn" href="https://github.com/wooorm/dictionaries/tree/main/dictionaries/de" target="_blank">🇩🇪 Deutsch</a>
+      <a class="download-btn" href="https://github.com/wooorm/dictionaries/tree/main/dictionaries/pt" target="_blank">🇧🇷 Português</a>
+      <a class="download-btn" href="https://github.com/wooorm/dictionaries" target="_blank">🌍 Más idiomas...</a>
+    </div>
+  </div>
+</div>
+
+<!-- TAB: Mis palabras -->
+<div class="tab-content" id="tab-words">
+  <div class="section">
+    <div class="section-title">Palabras agregadas al diccionario</div>
+    <div class="word-list" id="word-list">
+      <div class="dict-empty">Ninguna palabra agregada todavía</div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <a href="https://github.com/tu-usuario/spellcheck-open" target="_blank">GitHub</a> ·
+  Open Source · MIT License
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>

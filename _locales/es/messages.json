@@ -1,0 +1,30 @@
+{
+  "appName": {
+    "message": "SpellCheck Open",
+    "description": "Nombre de la extensión"
+  },
+  "appDesc": {
+    "message": "Corrección ortográfica multilingüe y de código abierto. Descarga y carga tus propios diccionarios.",
+    "description": "Descripción de la extensión"
+  },
+  "ctxMenuTitle": {
+    "message": "SpellCheck Open",
+    "description": "Título del menú contextual"
+  },
+  "ctxAddWord": {
+    "message": "Agregar al diccionario personal",
+    "description": "Opción del menú contextual"
+  },
+  "ctxToggle": {
+    "message": "Activar/desactivar corrección",
+    "description": "Opción del menú contextual"
+  },
+  "noSuggestions": {
+    "message": "Sin sugerencias",
+    "description": "Mensaje cuando no hay sugerencias"
+  },
+  "addToDictionary": {
+    "message": "✚ Agregar al diccionario",
+    "description": "Botón para agregar palabra"
+  }
+}
