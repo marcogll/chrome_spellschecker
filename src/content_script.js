@@ -27,18 +27,24 @@
   }
 
   function observeDOM() {
-    // Selector más amplio para capturar diferentes tipos de campos editables
+    // Selector más amplio para capturar TODOS los tipos de campos editables
+    // Incluye cualquier elemento con contenteditable (sin importar el valor)
     const selector = `
       input[type="text"], 
       input:not([type]), 
       input[type="search"],
       textarea, 
+      [contenteditable], 
       [contenteditable="true"], 
+      [contenteditable="false"],
       [contenteditable=""],
       [role="textbox"],
       [role="searchbox"],
+      [role="search"],
       .editable,
-      [data-gramm="false"]
+      [data-gramm="false"],
+      article[contenteditable],
+      [contenteditable="plaintext-only"]
     `;
     
     console.log('[SpellCheck] Buscando campos editables...');
