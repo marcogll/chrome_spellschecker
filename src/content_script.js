@@ -31,10 +31,12 @@
     const selector = `
       input[type="text"], 
       input:not([type]), 
+      input[type="search"],
       textarea, 
       [contenteditable="true"], 
       [contenteditable=""],
       [role="textbox"],
+      [role="searchbox"],
       .editable,
       [data-gramm="false"]
     `;
@@ -42,8 +44,17 @@
     console.log('[SpellCheck] Buscando campos editables...');
     const found = document.querySelectorAll(selector);
     console.log('[SpellCheck] Campos encontrados:', found.length);
-    found.forEach(el => {
-      console.log('[SpellCheck] Campo encontrado:', el.tagName, el.className?.substring(0, 50));
+    
+    if (found.length === 0) {
+      console.log('[SpellCheck] ⚠️ No se encontraron campos. Elementos en la página:');
+      console.log('[SpellCheck] - Textareas:', document.querySelectorAll('textarea').length);
+      console.log('[SpellCheck] - Inputs:', document.querySelectorAll('input').length);
+      console.log('[SpellCheck] - ContentEditable:', document.querySelectorAll('[contenteditable]').length);
+      console.log('[SpellCheck] - ActiveElement:', document.activeElement?.tagName);
+    }
+    
+    found.forEach((el, i) => {
+      console.log(`[SpellCheck] Campo ${i + 1}:`, el.tagName, el.type || '', el.className?.substring(0, 50));
       attachTo(el);
     });
 
@@ -67,6 +78,20 @@
     if (document.body) {
       observer.observe(document.body, { childList: true, subtree: true });
       console.log('[SpellCheck] Observador iniciado');
+      
+      // Reintentar después de un segundo (por si los elementos cargan dinámicamente)
+      setTimeout(() => {
+        console.log('[SpellCheck] Reintentando búsqueda de campos...');
+        const retryFound = document.querySelectorAll(selector);
+        console.log('[SpellCheck] Campos encontrados en reintento:', retryFound.length);
+        retryFound.forEach(el => {
+          if (!el._spellAttached) {
+            console.log('[SpellCheck] Campo encontrado en reintento:', el.tagName);
+            attachTo(el);
+          }
+        });
+      }, 1000);
+      
     } else {
       console.log('[SpellCheck] document.body no disponible aún');
       setTimeout(observeDOM, 500);
