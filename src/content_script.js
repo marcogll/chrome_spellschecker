@@ -27,20 +27,50 @@
   }
 
   function observeDOM() {
-    const selector = 'input[type="text"], input:not([type]), textarea, [contenteditable="true"]';
-    document.querySelectorAll(selector).forEach(attachTo);
+    // Selector más amplio para capturar diferentes tipos de campos editables
+    const selector = `
+      input[type="text"], 
+      input:not([type]), 
+      textarea, 
+      [contenteditable="true"], 
+      [contenteditable=""],
+      [role="textbox"],
+      .editable,
+      [data-gramm="false"]
+    `;
+    
+    console.log('[SpellCheck] Buscando campos editables...');
+    const found = document.querySelectorAll(selector);
+    console.log('[SpellCheck] Campos encontrados:', found.length);
+    found.forEach(el => {
+      console.log('[SpellCheck] Campo encontrado:', el.tagName, el.className?.substring(0, 50));
+      attachTo(el);
+    });
 
     const observer = new MutationObserver((mutations) => {
       for (const m of mutations) {
         m.addedNodes.forEach(node => {
           if (node.nodeType === 1) {
-            if (node.matches?.(selector)) attachTo(node);
-            node.querySelectorAll?.(selector).forEach(attachTo);
+            if (node.matches?.(selector)) {
+              console.log('[SpellCheck] Nuevo campo detectado:', node.tagName);
+              attachTo(node);
+            }
+            node.querySelectorAll?.(selector).forEach(el => {
+              console.log('[SpellCheck] Nuevo campo en subtree:', el.tagName);
+              attachTo(el);
+            });
           }
         });
       }
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    
+    if (document.body) {
+      observer.observe(document.body, { childList: true, subtree: true });
+      console.log('[SpellCheck] Observador iniciado');
+    } else {
+      console.log('[SpellCheck] document.body no disponible aún');
+      setTimeout(observeDOM, 500);
+    }
   }
 
   // ─── Verificar palabras de un elemento ────────────────────────────────────
@@ -351,12 +381,35 @@
   // ─── Inicio ───────────────────────────────────────────────────────────────
   async function init() {
     console.log('[SpellCheck] Inicializando content script...');
+    console.log('[SpellCheck] URL:', window.location.href);
+    
     try {
       const { enabled: en = true } = await chrome.storage.local.get('enabled');
       enabled = en;
       console.log('[SpellCheck] Estado:', enabled ? 'activado' : 'desactivado');
+      
+      // Verificar conexión con background
+      console.log('[SpellCheck] Verificando conexión con background...');
+      const status = await sendMsg({ type: 'GET_STATUS' });
+      console.log('[SpellCheck] Status del background:', status);
+      
+      if (!status || !status.langs || status.langs.length === 0) {
+        console.warn('[SpellCheck] ⚠️ No hay diccionarios instalados');
+      } else {
+        console.log('[SpellCheck] ✅ Diccionarios cargados:', status.langs);
+      }
+      
       observeDOM();
       console.log('[SpellCheck] Content script inicializado correctamente');
+      
+      // Exponer función global para testing manual
+      window.spellCheckDebug = {
+        checkElement: (el) => checkElement(el || document.activeElement),
+        getStatus: () => sendMsg({ type: 'GET_STATUS' }),
+        checkWord: (word) => sendMsg({ type: 'CHECK_WORDS', words: [word], lang: null })
+      };
+      console.log('[SpellCheck] Funciones de debug disponibles en window.spellCheckDebug');
+      
     } catch (e) {
       console.error('[SpellCheck] Error al inicializar:', e);
     }
