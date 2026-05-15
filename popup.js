@@ -295,5 +295,104 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   });
 });
 
+// ─── Instalación automática de diccionarios ─────────────────────────────────
+const DICTIONARY_URLS = {
+  es: {
+    aff: 'https://cdn.jsdelivr.net/gh/wooorm/dictionaries@main/dictionaries/es/index.aff',
+    dic: 'https://cdn.jsdelivr.net/gh/wooorm/dictionaries@main/dictionaries/es/index.dic',
+    name: 'Español'
+  },
+  en: {
+    aff: 'https://cdn.jsdelivr.net/gh/wooorm/dictionaries@main/dictionaries/en/index.aff',
+    dic: 'https://cdn.jsdelivr.net/gh/wooorm/dictionaries@main/dictionaries/en/index.dic',
+    name: 'English'
+  },
+  fr: {
+    aff: 'https://cdn.jsdelivr.net/gh/wooorm/dictionaries@main/dictionaries/fr/index.aff',
+    dic: 'https://cdn.jsdelivr.net/gh/wooorm/dictionaries@main/dictionaries/fr/index.dic',
+    name: 'Français'
+  },
+  de: {
+    aff: 'https://cdn.jsdelivr.net/gh/wooorm/dictionaries@main/dictionaries/de/index.aff',
+    dic: 'https://cdn.jsdelivr.net/gh/wooorm/dictionaries@main/dictionaries/de/index.dic',
+    name: 'Deutsch'
+  },
+  pt: {
+    aff: 'https://cdn.jsdelivr.net/gh/wooorm/dictionaries@main/dictionaries/pt/index.aff',
+    dic: 'https://cdn.jsdelivr.net/gh/wooorm/dictionaries@main/dictionaries/pt/index.dic',
+    name: 'Português'
+  },
+  it: {
+    aff: 'https://cdn.jsdelivr.net/gh/wooorm/dictionaries@main/dictionaries/it/index.aff',
+    dic: 'https://cdn.jsdelivr.net/gh/wooorm/dictionaries@main/dictionaries/it/index.dic',
+    name: 'Italiano'
+  }
+};
+
+async function downloadAndInstallDictionary(langCode) {
+  const dict = DICTIONARY_URLS[langCode];
+  if (!dict) {
+    showFeedback(`Idioma no soportado: ${langCode}`, 'error');
+    return;
+  }
+
+  showFeedback(`Descargando ${dict.name}...`, 'loading');
+  setProgress(10);
+
+  try {
+    // Descargar archivos
+    setProgress(30);
+    const [affResponse, dicResponse] = await Promise.all([
+      fetch(dict.aff),
+      fetch(dict.dic)
+    ]);
+
+    if (!affResponse.ok || !dicResponse.ok) {
+      throw new Error('Error al descargar los archivos');
+    }
+
+    setProgress(60);
+    const [affText, dicText] = await Promise.all([
+      affResponse.text(),
+      dicResponse.text()
+    ]);
+
+    setProgress(80);
+    // Convertir a base64
+    const affBase64 = btoa(unescape(encodeURIComponent(affText)));
+    const dicBase64 = btoa(unescape(encodeURIComponent(dicText)));
+
+    // Instalar
+    const resp = await sendMsg({
+      type: 'LOAD_DICTIONARY',
+      lang: langCode,
+      affData: affBase64,
+      dicData: dicBase64,
+    });
+
+    setProgress(100);
+
+    if (resp?.success) {
+      showFeedback(`✓ Diccionario "${dict.name}" instalado correctamente`);
+      await loadStatus();
+    } else {
+      showFeedback(`Error al instalar: ${resp?.error || 'desconocido'}`, 'error');
+    }
+  } catch (e) {
+    showFeedback(`Error: ${e.message}`, 'error');
+    console.error('Error instalando diccionario:', e);
+  }
+
+  setTimeout(() => setProgress(null), 600);
+}
+
+// Event listeners para botones de instalación automática
+document.querySelectorAll('.auto-install').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const lang = btn.dataset.lang;
+    downloadAndInstallDictionary(lang);
+  });
+});
+
 // ─── Inicio ───────────────────────────────────────────────────────────────────
 loadStatus();
