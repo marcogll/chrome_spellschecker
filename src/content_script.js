@@ -431,9 +431,19 @@
       window.spellCheckDebug = {
         checkElement: (el) => checkElement(el || document.activeElement),
         getStatus: () => sendMsg({ type: 'GET_STATUS' }),
-        checkWord: (word) => sendMsg({ type: 'CHECK_WORDS', words: [word], lang: null })
+        checkWord: (word) => sendMsg({ type: 'CHECK_WORDS', words: [word], lang: null }),
+        forceCheck: () => {
+          const el = document.activeElement;
+          console.log('[SpellCheck Debug] Elemento activo:', el?.tagName, el);
+          if (el) {
+            attachTo(el);
+            checkElement(el);
+          }
+        },
+        attachToElement: (el) => attachTo(el || document.activeElement)
       };
       console.log('[SpellCheck] Funciones de debug disponibles en window.spellCheckDebug');
+      console.log('[SpellCheck] - window.spellCheckDebug.forceCheck() - fuerza verificación del elemento activo');
       
     } catch (e) {
       console.error('[SpellCheck] Error al inicializar:', e);
