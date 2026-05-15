@@ -53,10 +53,17 @@ async function loadStatus() {
     if (hasDicts) {
       welcomeScreen.style.display = 'none';
       normalView.style.display = 'block';
+      // Renderizar en vista normal
+      renderDictList(langs || [], 'dict-list-normal');
     } else {
       welcomeScreen.style.display = 'block';
       normalView.style.display = 'none';
+      // Renderizar en pantalla de bienvenida
+      renderDictList(langs || [], 'dict-list');
     }
+  } else {
+    // Fallback para compatibilidad
+    renderDictList(langs || [], 'dict-list');
   }
 
   // Status bar
@@ -72,12 +79,12 @@ async function loadStatus() {
       ? `Activo · ${langs.length} idioma${langs.length > 1 ? 's' : ''}`
       : 'Desactivado';
   }
-
-  renderDictList(langs || []);
 }
 
-function renderDictList(langs) {
-  const list = $('dict-list');
+function renderDictList(langs, listId = 'dict-list') {
+  const list = $(listId);
+  if (!list) return;
+  
   if (!langs.length) {
     list.innerHTML = '<div class="dict-empty">No hay diccionarios instalados</div>';
     return;
