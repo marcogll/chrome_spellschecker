@@ -402,48 +402,112 @@
 
 <!-- TAB: Diccionarios -->
 <div class="tab-content active" id="tab-dicts">
-  <div class="section">
-    <div class="section-title">Diccionarios instalados</div>
-    <div class="dict-list" id="dict-list">
-      <div class="dict-empty">No hay diccionarios instalados</div>
-    </div>
-
-    <!-- Área de carga de archivos -->
-    <label class="add-dict-area" id="drop-zone">
-      <input type="file" id="file-input" accept=".zip,.dic,.aff" multiple>
-      <div class="add-dict-icon">📂</div>
-      <div class="add-dict-label">
-        <strong>Selecciona archivos .dic + .aff</strong><br>
-        o arrastra y suelta aquí
+  
+  <!-- Welcome screen - se muestra cuando no hay diccionarios -->
+  <div id="welcome-screen" style="display: none;">
+    <div class="section">
+      <div style="text-align: center; padding: 20px 0;">
+        <div style="font-size: 48px; margin-bottom: 10px;">📚</div>
+        <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px;">¡Bienvenido a SpellCheck Open!</div>
+        <div style="font-size: 12px; color: var(--text2); margin-bottom: 16px;">
+          Para empezar, instala al menos un diccionario.
+          <br>Recomendamos español e inglés.
+        </div>
       </div>
-    </label>
-  </div>
-
-  <!-- Descargar diccionarios -->
-  <div class="download-section">
-    <div class="download-title">Instalar diccionarios automáticamente</div>
-    <div class="download-grid">
-      <button class="download-btn auto-install" data-lang="es">
-        <span class="flag">🇪🇸</span> Español
-      </button>
-      <button class="download-btn auto-install" data-lang="en">
-        <span class="flag">🇺🇸</span> English
-      </button>
-      <button class="download-btn auto-install" data-lang="fr">
-        <span class="flag">🇫🇷</span> Français
-      </button>
-      <button class="download-btn auto-install" data-lang="de">
-        <span class="flag">🇩🇪</span> Deutsch
-      </button>
-      <button class="download-btn auto-install" data-lang="pt">
-        <span class="flag">🇧🇷</span> Português
-      </button>
-      <button class="download-btn auto-install" data-lang="it">
-        <span class="flag">🇮🇹</span> Italiano
-      </button>
+      
+      <div style="background: var(--accent-bg); border: 1px solid var(--accent); border-radius: var(--radius); padding: 12px; margin-bottom: 16px;">
+        <div style="font-weight: 600; font-size: 12px; margin-bottom: 8px; color: var(--accent);">⚡ Instalación rápida</div>
+        <button id="quick-install-es" class="download-btn" style="width: 100%; margin-bottom: 6px; justify-content: center;">
+          <span>🇪🇸</span> Instalar Español
+        </button>
+        <button id="quick-install-en" class="download-btn" style="width: 100%; margin-bottom: 6px; justify-content: center;">
+          <span>🇺🇸</span> Instalar English
+        </button>
+        <button id="quick-install-both" class="download-btn" style="width: 100%; background: var(--accent); color: white; border-color: var(--accent);">
+          <span>🚀</span> Instalar ambos (ES + EN)
+        </button>
+      </div>
+      
+      <div style="text-align: center; font-size: 11px; color: var(--text2); margin-bottom: 12px;">
+        — o —
+      </div>
+      
+      <!-- Área de carga de archivos -->
+      <label class="add-dict-area" id="drop-zone">
+        <input type="file" id="file-input" accept=".zip,.dic,.aff" multiple>
+        <div class="add-dict-icon">📂</div>
+        <div class="add-dict-label">
+          <strong>Cargar archivos manualmente</strong><br>
+          .dic + .aff
+        </div>
+      </label>
     </div>
-    <div class="download-info" style="margin-top: 8px; font-size: 11px; color: var(--text2); text-align: center;">
-      Click para descargar e instalar automáticamente
+    
+    <!-- Más idiomas -->
+    <div class="download-section">
+      <div class="download-title">Más idiomas disponibles</div>
+      <div class="download-grid">
+        <button class="download-btn auto-install" data-lang="fr">
+          <span class="flag">🇫🇷</span> Français
+        </button>
+        <button class="download-btn auto-install" data-lang="de">
+          <span class="flag">🇩🇪</span> Deutsch
+        </button>
+        <button class="download-btn auto-install" data-lang="pt">
+          <span class="flag">🇧🇷</span> Português
+        </button>
+        <button class="download-btn auto-install" data-lang="it">
+          <span class="flag">🇮🇹</span> Italiano
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Vista normal - se muestra cuando hay diccionarios -->
+  <div id="normal-view">
+    <div class="section">
+      <div class="section-title">Diccionarios instalados</div>
+      <div class="dict-list" id="dict-list">
+        <div class="dict-empty">No hay diccionarios instalados</div>
+      </div>
+
+      <!-- Área de carga de archivos -->
+      <label class="add-dict-area" id="drop-zone">
+        <input type="file" id="file-input" accept=".zip,.dic,.aff" multiple>
+        <div class="add-dict-icon">📂</div>
+        <div class="add-dict-label">
+          <strong>Selecciona archivos .dic + .aff</strong><br>
+          o arrastra y suelta aquí
+        </div>
+      </label>
+    </div>
+
+    <!-- Descargar diccionarios -->
+    <div class="download-section">
+      <div class="download-title">Instalar diccionarios automáticamente</div>
+      <div class="download-grid">
+        <button class="download-btn auto-install" data-lang="es">
+          <span class="flag">🇪🇸</span> Español
+        </button>
+        <button class="download-btn auto-install" data-lang="en">
+          <span class="flag">🇺🇸</span> English
+        </button>
+        <button class="download-btn auto-install" data-lang="fr">
+          <span class="flag">🇫🇷</span> Français
+        </button>
+        <button class="download-btn auto-install" data-lang="de">
+          <span class="flag">🇩🇪</span> Deutsch
+        </button>
+        <button class="download-btn auto-install" data-lang="pt">
+          <span class="flag">🇧🇷</span> Português
+        </button>
+        <button class="download-btn auto-install" data-lang="it">
+          <span class="flag">🇮🇹</span> Italiano
+        </button>
+      </div>
+      <div class="download-info" style="margin-top: 8px; font-size: 11px; color: var(--text2); text-align: center;">
+        Click para descargar e instalar automáticamente
+      </div>
     </div>
   </div>
 </div>

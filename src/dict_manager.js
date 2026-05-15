@@ -178,32 +178,89 @@ export class DictManager {
     if (this._loadedLangs.length === 0) return null;
     if (this._loadedLangs.length === 1) return this._loadedLangs[0];
 
-    const words = text.toLowerCase().split(/\W+/).filter(w => w.length > 3);
-    const sample = words.slice(0, 50);
+    // Primero, detectar por caracteres específicos del idioma
+    const langByChars = this._detectBySpecialChars(text);
+    if (langByChars) {
+      console.log('[DictManager] Idioma detectado por caracteres especiales:', langByChars);
+      return langByChars;
+    }
+
+    // Si no, usar análisis estadístico de palabras
+    const words = text.toLowerCase().split(/\W+/).filter(w => w.length > 2);
+    const sample = words.slice(0, 100);
     if (sample.length === 0) return this._getDefaultLang();
 
     const scores = {};
+    const wordCounts = {};
 
     for (const lang of this._loadedLangs) {
       const checker = this._checkers[lang];
       if (!checker) continue;
       let hits = 0;
+      let totalChecked = 0;
+      
       for (const w of sample) {
-        if (checker.check(w)) hits++;
+        // Solo verificar palabras que no sean números o siglas
+        if (w.length > 2 && /[a-záéíóúüñàâãäåæçèêëìîïðòôõöøùûüýþÿœ]/.test(w)) {
+          totalChecked++;
+          if (checker.check(w)) hits++;
+        }
       }
-      scores[lang] = hits;
+      
+      // Calcular porcentaje de coincidencia
+      const percentage = totalChecked > 0 ? (hits / totalChecked) : 0;
+      scores[lang] = percentage;
+      wordCounts[lang] = hits;
     }
 
-    const ranked = Object.entries(scores).sort((a, b) => {
-      if (b[1] !== a[1]) return b[1] - a[1];
-      return this._langPriority(a[0]) - this._langPriority(b[0]);
-    });
+    // Ordenar por puntuación
+    const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1]);
     const best = ranked[0];
+    const second = ranked[1];
 
-    // Si ningún diccionario reconoce la muestra, usamos español como idioma
-    // principal cuando está instalado.
-    if (!best || best[1] === 0) return this._getDefaultLang();
-    return best[0];
+    console.log('[DictManager] Puntuaciones de idioma:', scores);
+
+    // Si el mejor tiene una ventaja clara (>15%), usarlo
+    if (best && best[1] > 0.3) {
+      if (!second || (best[1] - second[1]) > 0.15) {
+        console.log('[DictManager] Idioma detectado por estadística:', best[0], `(${Math.round(best[1]*100)}%)`);
+        return best[0];
+      }
+    }
+
+    // Si hay empate o poca confianza, usar idioma por defecto
+    return this._getDefaultLang();
+  }
+
+  _detectBySpecialChars(text) {
+    // Caracteres específicos de cada idioma
+    const patterns = {
+      'es': /[áéíóúüñ¿¡]/i,  // Español
+      'en': null,  // Inglés no tiene caracteres especiales únicos
+      'fr': /[àâäæçéèêëïîôœùûüÿ]/i,  // Francés
+      'de': /[äöüß]/i,  // Alemán
+      'pt': /[áâãàçéêíóôõú]/i,  // Portugués
+      'it': /[àèéìòù]/i,  // Italiano
+    };
+
+    // Verificar caracteres especiales
+    for (const [lang, pattern] of Object.entries(patterns)) {
+      if (pattern && pattern.test(text) && this._checkers[lang]) {
+        // Verificar que sea suficientemente único (no demasiadas coincidencias)
+        let uniqueCount = 0;
+        for (const [otherLang, otherPattern] of Object.entries(patterns)) {
+          if (otherLang !== lang && otherPattern && otherPattern.test(text)) {
+            uniqueCount++;
+          }
+        }
+        // Si es único o tiene poco overlap, usarlo
+        if (uniqueCount <= 1) {
+          return lang;
+        }
+      }
+    }
+
+    return null;
   }
 
   _getDefaultLang() {

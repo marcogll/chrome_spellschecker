@@ -44,8 +44,23 @@ async function loadStatus() {
   // Toggle global
   $('toggle-enabled').checked = enabled !== false;
 
+  // Mostrar/ocultar pantalla de bienvenida
+  const hasDicts = langs && langs.length > 0;
+  const welcomeScreen = $('welcome-screen');
+  const normalView = $('normal-view');
+  
+  if (welcomeScreen && normalView) {
+    if (hasDicts) {
+      welcomeScreen.style.display = 'none';
+      normalView.style.display = 'block';
+    } else {
+      welcomeScreen.style.display = 'block';
+      normalView.style.display = 'none';
+    }
+  }
+
   // Status bar
-  if (!langs || langs.length === 0) {
+  if (!hasDicts) {
     $('status-dot').className = 'status-dot empty';
     $('status-langs').textContent = 'Sin diccionarios';
     $('status-text').textContent = 'Instala un diccionario para empezar';
@@ -393,6 +408,26 @@ document.querySelectorAll('.auto-install').forEach(btn => {
     downloadAndInstallDictionary(lang);
   });
 });
+
+// Botones de instalación rápida (en pantalla de bienvenida)
+const quickInstallEs = $('quick-install-es');
+const quickInstallEn = $('quick-install-en');
+const quickInstallBoth = $('quick-install-both');
+
+if (quickInstallEs) {
+  quickInstallEs.addEventListener('click', () => downloadAndInstallDictionary('es'));
+}
+if (quickInstallEn) {
+  quickInstallEn.addEventListener('click', () => downloadAndInstallDictionary('en'));
+}
+if (quickInstallBoth) {
+  quickInstallBoth.addEventListener('click', async () => {
+    showFeedback('Instalando español e inglés...', 'loading');
+    await downloadAndInstallDictionary('es');
+    await downloadAndInstallDictionary('en');
+    showFeedback('¡Diccionarios instalados correctamente!');
+  });
+}
 
 // ─── Inicio ───────────────────────────────────────────────────────────────────
 loadStatus();
