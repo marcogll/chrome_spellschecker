@@ -210,9 +210,39 @@ function fileToBase64(file) {
 }
 
 function detectLangFromFilename(base) {
-  // Normalizar: es_ES, es-ES, spanish, etc.
+  // Normalizar: es_ES, es-ES, spanish, english, etc.
   const lower = base.toLowerCase();
-  const code = lower.split(/[-_]/)[0];
+  
+  // Mapeo de nombres comunes a códigos ISO
+  const langMap = {
+    'spanish': 'es',
+    'english': 'en',
+    'french': 'fr',
+    'german': 'de',
+    'portuguese': 'pt',
+    'italian': 'it',
+    'dutch': 'nl',
+    'polish': 'pl',
+    'russian': 'ru',
+    'catalan': 'ca',
+    'español': 'es',
+    'ingles': 'en',
+    'frances': 'fr',
+    'aleman': 'de',
+    'portugues': 'pt',
+    'italiano': 'it',
+    'neerlandes': 'nl',
+    'polaco': 'pl',
+    'ruso': 'ru'
+  };
+  
+  // Primero intentar mapeo directo
+  if (langMap[lower]) {
+    return langMap[lower];
+  }
+  
+  // Si no, extraer código ISO del nombre (es_ES, en-US, etc.)
+  const code = lower.split(/[-_.]/)[0];
   return code;
 }
 

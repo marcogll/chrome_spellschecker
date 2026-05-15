@@ -87,11 +87,14 @@ export class DictManager {
     this._userWords = new Set(userRows.map(r => r.word));
     // Recargar diccionarios guardados
     const dicts = await this._dbGetAll(STORE_DICTS);
+    console.log(`[DictManager] Diccionarios encontrados en DB:`, dicts.length);
     for (const dict of dicts) {
+      console.log(`[DictManager] Cargando idioma: ${dict.lang}, tamaño .dic: ${dict.dicText?.length || 0} chars`);
       await this._buildChecker(dict.lang, dict.dicText);
       this._loadedLangs.push(dict.lang);
     }
     console.log(`[DictManager] Idiomas cargados: ${this._loadedLangs.join(', ') || 'ninguno'}`);
+    console.log(`[DictManager] Palabras en diccionario personal: ${this._userWords.size}`);
   }
 
   // ─── Carga de diccionario ─────────────────────────────────────────────────

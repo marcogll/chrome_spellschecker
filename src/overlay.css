@@ -3,25 +3,38 @@
 /* ── Subrayado de errores (en contenteditable) ──────────────────────────── */
 mark.sc-error {
   background: transparent;
-  text-decoration: underline wavy #e53935;
-  text-decoration-thickness: 2px;
-  cursor: pointer;
+  text-decoration: underline wavy #ff0000 !important;
+  text-decoration-thickness: 2px !important;
+  cursor: pointer !important;
   color: inherit;
   border-radius: 0;
   padding: 0;
+  position: relative;
+  z-index: 2147483640;
 }
 
 mark.sc-error:hover {
-  background-color: rgba(229, 57, 53, 0.08);
+  background-color: rgba(255, 0, 0, 0.15) !important;
   border-radius: 2px;
 }
 
 /* ── Espejo para input/textarea (se aplica via JS) ──────────────────────── */
+.sc-mirror {
+  background: transparent !important;
+  pointer-events: none !important;
+}
+
 .sc-mirror mark.sc-error {
-  background: transparent;
-  text-decoration: underline wavy #e53935;
-  text-decoration-thickness: 2px;
-  color: transparent;
+  background: transparent !important;
+  text-decoration: underline wavy #ff0000 !important;
+  text-decoration-thickness: 2px !important;
+  color: transparent !important;
+  position: relative;
+  z-index: 2147483640;
+}
+
+.sc-mirror mark.sc-error:hover {
+  background-color: rgba(255, 0, 0, 0.15) !important;
 }
 
 /* ── Caja de sugerencias ────────────────────────────────────────────────── */

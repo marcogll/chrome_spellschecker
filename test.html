@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpellCheck Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            font-size: 16px;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+        .info {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        code {
+            background: #e0e0e0;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>📝 SpellCheck Test Page</h1>
+    
+    <div class="info">
+        <p><strong>Instrucciones:</strong></p>
+        <ol>
+            <li>Asegúrate de tener cargado el diccionario español en el popup de la extensión</li>
+            <li>Escribe texto con errores en el textarea de abajo</li>
+            <li>Las palabras mal escritas deberían subrayarse en rojo ondulado</li>
+            <li>Haz clic en una palabra subrayada para ver sugerencias</li>
+        </ol>
+        <p><strong>Texto de prueba (copia y pega):</strong></p>
+        <code>Holaa mundo, esto es una prueva ortografica. Tengp muchos erores.</code>
+    </div>
+
+    <h2>Textarea de prueba:</h2>
+    <textarea id="test" placeholder="Escribe aquí... Holaa mundo, esto es una prueva ortografica."></textarea>
+
+    <h2>Content Editable:</h2>
+    <div contenteditable="true" style="border: 2px solid #ccc; padding: 10px; min-height: 100px; border-radius: 5px;">
+        Escribe aquí para probar contenteditable...
+    </div>
+
+    <script>
+        console.log('[Test Page] Página de prueba cargada');
+    </script>
+</body>
+</html>

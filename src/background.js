@@ -5,10 +5,14 @@ import { DictManager } from './dict_manager.js';
 import { applyDailyIcon } from './icon_manager.js';
 
 const dictManager = new DictManager();
+let isInitialized = false;
 
 // ─── Inicialización ───────────────────────────────────────────────────────────
 chrome.runtime.onInstalled.addListener(async () => {
+  console.log('[SpellCheck] Instalando extensión...');
   await dictManager.init();
+  isInitialized = true;
+  console.log('[SpellCheck] Inicializado. Idiomas cargados:', await dictManager.getLoadedLangs());
   await applyDailyIcon();
   scheduleDailyIconRefresh();
   buildContextMenu();
@@ -16,7 +20,10 @@ chrome.runtime.onInstalled.addListener(async () => {
 });
 
 chrome.runtime.onStartup.addListener(async () => {
+  console.log('[SpellCheck] Iniciando extensión...');
   await dictManager.init();
+  isInitialized = true;
+  console.log('[SpellCheck] Inicializado. Idiomas cargados:', await dictManager.getLoadedLangs());
   await applyDailyIcon();
   scheduleDailyIconRefresh();
 });

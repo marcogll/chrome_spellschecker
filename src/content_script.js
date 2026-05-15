@@ -4,6 +4,9 @@
 (function () {
   'use strict';
 
+  // Log inmediato para verificar que el content script se cargó
+  console.log('[SpellCheck] Content script cargado en:', window.location.href);
+
   let enabled = true;
   let currentLang = null;
   let pendingCheck = null;
@@ -42,24 +45,42 @@
 
   // ─── Verificar palabras de un elemento ────────────────────────────────────
   async function checkElement(el) {
+    if (!enabled) {
+      console.log('[SpellCheck] Extensión desactivada');
+      return;
+    }
+    
     const text = el.value ?? el.innerText ?? '';
-    if (!text.trim()) return;
+    if (!text.trim()) {
+      console.log('[SpellCheck] Texto vacío');
+      return;
+    }
+    
+    console.log('[SpellCheck] Verificando elemento:', el.tagName, 'texto:', text.substring(0, 50) + '...');
 
     // Detectar idioma del texto completo
     const langResp = await sendMsg({ type: 'DETECT_LANG', text });
     currentLang = langResp?.lang ?? null;
+    console.log('[SpellCheck] Idioma detectado:', currentLang);
 
     // Extraer palabras únicas
     const wordSet = new Set(
       text.match(/[a-záéíóúüñàâãäåæçèêëìîïðòôõöøùûüýþÿœ'-]+/gi) || []
     );
     const words = [...wordSet].filter(w => w.length > 1);
+    console.log('[SpellCheck] Palabras encontradas:', words.length, words.slice(0, 10));
     if (!words.length) return;
 
     const resp = await sendMsg({ type: 'CHECK_WORDS', words, lang: currentLang });
-    if (!resp?.results) return;
+    console.log('[SpellCheck] Respuesta del background:', resp);
+    
+    if (!resp?.results) {
+      console.log('[SpellCheck] No hay resultados del background');
+      return;
+    }
 
     const errors = words.filter(w => !resp.results[w.toLowerCase()]?.correct);
+    console.log('[SpellCheck] Errores encontrados:', errors);
     renderHighlights(el, text, errors, resp.results);
   }
 
@@ -87,6 +108,8 @@
 
   // ─── Espejo para input/textarea ───────────────────────────────────────────
   function createMirror(el, text, errors, results) {
+    console.log('[SpellCheck] Creando espejo para', el.tagName, 'con', errors.length, 'errores');
+    
     const rect = el.getBoundingClientRect();
     const style = window.getComputedStyle(el);
 
@@ -125,11 +148,11 @@
     el.addEventListener('scroll', syncScroll);
     syncScroll();
 
-    // Eventos de clic en errores
-    mirror.querySelectorAll('.sc-error').forEach(span => {
-      // Los clics pasan al elemento real porque pointerEvents es none en el mirror
-      // Usamos un overlay transparente con posicionamiento absoluto
-    });
+    console.log('[SpellCheck] Espejo creado y añadido al DOM');
+    
+    // Debug: mostrar qué errores se marcaron
+    const errorMarks = mirror.querySelectorAll('.sc-error');
+    console.log('[SpellCheck] Marcas de error en el espejo:', errorMarks.length);
   }
 
   function buildHighlightedHTML(text, errors, results) {
@@ -137,12 +160,17 @@
     const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     // Reemplazar palabras erróneas
     const errorSet = new Set(errors.map(e => e.toLowerCase()));
-    return escaped.replace(/[a-záéíóúüñàâãäåæçèêëìîïðòôõöøùûüýþÿœ'-]+/gi, (match) => {
+    console.log('[SpellCheck] Palabras a marcar:', [...errorSet]);
+    
+    const result = escaped.replace(/[a-záéíóúüñàâãäåæçèêëìîïðòôõöøùûüýþÿœ'-]+/gi, (match) => {
       if (errorSet.has(match.toLowerCase())) {
+        console.log('[SpellCheck] Marcando error:', match);
         return `<mark class="sc-error" data-word="${match.toLowerCase()}">${match}</mark>`;
       }
       return match;
     });
+    
+    return result;
   }
 
   // ─── Marcar en contenteditable ────────────────────────────────────────────
@@ -322,9 +350,16 @@
 
   // ─── Inicio ───────────────────────────────────────────────────────────────
   async function init() {
-    const { enabled: en = true } = await chrome.storage.local.get('enabled');
-    enabled = en;
-    observeDOM();
+    console.log('[SpellCheck] Inicializando content script...');
+    try {
+      const { enabled: en = true } = await chrome.storage.local.get('enabled');
+      enabled = en;
+      console.log('[SpellCheck] Estado:', enabled ? 'activado' : 'desactivado');
+      observeDOM();
+      console.log('[SpellCheck] Content script inicializado correctamente');
+    } catch (e) {
+      console.error('[SpellCheck] Error al inicializar:', e);
+    }
   }
 
   init();

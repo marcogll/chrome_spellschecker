@@ -1,4 +1,17 @@
-# SpellCheck Open
+<p align="center">
+  <img src="icons/icon128.png" width="110" alt="SpellCheck Open">
+</p>
+<h1 align="center">SpellCheck Open</h1>
+<p align="center">
+  Extensión de Chrome para corrección ortográfica multilingüe con diccionarios Hunspell locales 🔤
+</p>
+<p align="center">
+  <img src="https://img.shields.io/badge/Chrome_Extension-3a3a3a?style=flat-square&logo=googlechrome&logoColor=white" alt="Chrome Extension">
+  <img src="https://img.shields.io/badge/Manifest_V3-3a3a3a?style=flat-square&logo=json&logoColor=white" alt="Manifest V3">
+  <img src="https://img.shields.io/badge/JavaScript-3a3a3a?style=flat-square&logo=javascript&logoColor=white" alt="JavaScript">
+  <img src="https://img.shields.io/badge/Hunspell-3a3a3a?style=flat-square&logo=readthedocs&logoColor=white" alt="Hunspell">
+  <img src="https://img.shields.io/badge/Catppuccin-3a3a3a?style=flat-square&logo=catppuccin&logoColor=white" alt="Catppuccin">
+</p>
 
 Extensión de Chrome para corrección ortográfica multilingüe con diccionarios locales Hunspell. El texto se procesa en el navegador y no se envía a servidores externos.
 
